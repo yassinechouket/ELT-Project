@@ -8,14 +8,14 @@ def wait_for_postgres(host, max_retries=5, delay_seconds=5):
             result = subprocess.run(
                 ["pg_isready", "-h", host], check=True, capture_output=True, text=True)
             if "accepting connections" in result.stdout:
-                print(f"✅ PostgreSQL on {host} is ready!")
+                print(f" PostgreSQL on {host} is ready!")
                 return True
         except subprocess.CalledProcessError as e:
-            print(f"❌ Cannot connect to {host}: {e}")
+            print(f" Cannot connect to {host}: {e}")
         retries += 1
-        print(f"⏳ Retrying in {delay_seconds}s... (Attempt {retries}/{max_retries})")
+        print(f" Retrying in {delay_seconds}s... (Attempt {retries}/{max_retries})")
         time.sleep(delay_seconds)
-    print(f"❌ Max retries reached for {host}. Exiting.")
+    print(f" Max retries reached for {host}. Exiting.")
     return False
 
 
@@ -24,7 +24,7 @@ if not wait_for_postgres("source_postgres"):
 if not wait_for_postgres("destination_postgres"):
     exit(1)
 
-print("🚀 Starting ELT script...")
+print("Starting ELT script...")
 
 source_config = {
     'dbname': 'source_db',
@@ -40,7 +40,7 @@ destination_config = {
     'host': 'destination_postgres'
 }
 
-print("📤 Dumping data from source_db...")
+print("Dumping data from source_db...")
 dump_command = [
     'pg_dump',
     '-h', source_config['host'],
@@ -52,9 +52,9 @@ dump_command = [
 
 subprocess_env = dict(PGPASSWORD=source_config['password'])
 subprocess.run(dump_command, env=subprocess_env, check=True)
-print("✅ Dump completed.")
+print("Dump completed.")
 
-print("📥 Loading data into destination_db...")
+print("Loading data into destination_db...")
 load_command = [
     'psql',
     '-h', destination_config['host'],
@@ -65,6 +65,6 @@ load_command = [
 
 subprocess_env = dict(PGPASSWORD=destination_config['password'])
 subprocess.run(load_command, env=subprocess_env, check=True)
-print("✅ Load completed.")
+print("Load completed.")
 
-print("🏁 ELT script finished.")
+print("ELT script finished.")
